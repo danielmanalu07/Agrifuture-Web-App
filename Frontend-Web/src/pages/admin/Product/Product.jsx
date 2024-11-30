@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "../../../partials/SidebarAdmin";
 import Header from "../../../partials/Header";
 import axios from "axios";
-import ProductTable from "../../../partials/product/tabelProduct";
+import ProductTable from "../../../partials/product/tabelProductAdmin";
 
 const ProductPage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);

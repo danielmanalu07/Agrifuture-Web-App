@@ -1,31 +1,148 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
 import Sidebar from "../../../partials/SidebarSeller";
 import Header from "../../../partials/Header";
 import OrderTablePage from "../../../partials/detailProduk/OrderTabelPage";
 
 const DetailProdukPage = () => {
+  const { id } = useParams(); 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isEditable, setIsEditable] = useState(false); // State untuk mode edit
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isEditable, setIsEditable] = useState(false);
+  const [productData, setProductData] = useState(null);
   const [formData, setFormData] = useState({
-    namaProduk: "Ecofert",
-    namaToko: "UD Marpaung",
-    deskripsi:
-      "Ecofert adalah pupuk hayati yang mengandung mikroorganisme yang bermanfaat untuk kesuburan tanah. Pupuk ini dapat digunakan untuk tanaman pangan, hortikultura, dan perkebunan.",
-    kategori: "Organik",
-    harga: "Rp 23,000.00",
-    stok: "13",
+    name: "",
+    description: "",
+    category_id: "",
+    price: "",
+    seller_id: "",
+    image_path: "",
+    created_at: ""
   });
 
-  // Handle perubahan input
+  // Fetch data produk berdasarkan ID
+  useEffect(() => {
+    const fetchProductDetail = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          `http://localhost:3000/api/pupuk/${id}`, // Update endpoint for seller
+          {
+            headers: { 
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+          }
+        );
+
+        // Save full product data for reference
+        setProductData(response.data);
+
+        // Prepare form data directly from response
+        setFormData({
+          name: response.data.name || "Nama Produk Tidak Ada",
+          description: response.data.description || "Deskripsi Tidak Ada",
+          category_id: response.data.category_name || "Kategori Tidak Ada",
+          price: response.data.price 
+            ? `Rp ${parseFloat(response.data.price).toLocaleString("id-ID")}` 
+            : "Rp 0",
+          seller_id: response.data.seller_name || "Penjual Tidak Diketahui",
+          image_path: response.data.image_path 
+            ? `http://localhost:3000/uploads/${response.data.image_path}` 
+            : "/images/default.png",
+          created_at: response.data.created_at 
+            ? new Date(response.data.created_at).toLocaleDateString('id-ID') 
+            : "Tanggal Tidak Tersedia"
+        });
+
+      } catch (err) {
+        console.error("Detailed Error:", err);
+        setError(err.response?.data?.message || "Gagal memuat detail produk");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchProductDetail();
+    }
+  }, [id]);
+
+  // Handle input changes for editable fields
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Toggle mode edit
-  const toggleEditMode = () => {
-    setIsEditable((prev) => !prev);
+  // Toggle edit mode
+  const toggleEditMode = async () => {
+    if (isEditable) {
+      try {
+        const token = localStorage.getItem("token");
+        await axios.put(
+          `http://localhost:3000/api/pupuk/${id}`,
+          {
+            name: formData.name,
+            description: formData.description,
+            price: parseFloat(formData.price.replace(/[^0-9.-]+/g,"")),
+          },
+          {
+            headers: { 
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+          }
+        );
+        alert("Produk berhasil diperbarui");
+      } catch (err) {
+        console.error("Error updating product:", err);
+        alert("Gagal memperbarui produk");
+      }
+    }
+    setIsEditable(!isEditable);
   };
+
+  // Handle image upload
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const formDataUpload = new FormData();
+      formDataUpload.append('image', file);
+
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.post(
+          `http://localhost:3000/api/pupuk/${id}/upload`,
+          formDataUpload,
+          {
+            headers: { 
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'multipart/form-data'
+            },
+          }
+        );
+
+        // Update image path
+        setFormData((prev) => ({
+          ...prev,
+          image_path: `http://localhost:3000/uploads/${response.data.image_path}`
+        }));
+
+        alert("Gambar berhasil diunggah");
+      } catch (err) {
+        console.error("Error uploading image:", err);
+        alert("Gagal mengunggah gambar");
+      }
+    }
+  };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div className="text-red-500">Error: {error}</div>;
 
   return (
     <div className="flex h-screen overflow-hidden dark:bg-gray-900 dark:text-gray-100">
@@ -41,8 +158,6 @@ const DetailProdukPage = () => {
                   Detail Produk
                 </h1>
               </div>
-
-              {/* Button Edit */}
               <button
                 onClick={toggleEditMode}
                 className="px-4 py-2 bg-[#7AB434] hover:bg-[#6AA22F] text-white rounded-lg"
@@ -51,10 +166,8 @@ const DetailProdukPage = () => {
               </button>
             </div>
 
-            {/* Section dengan Background Putih */}
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Kolom Kiri - Form Detail */}
                 <div>
                   <form className="space-y-4">
                     <div>
@@ -63,24 +176,23 @@ const DetailProdukPage = () => {
                       </label>
                       <input
                         type="text"
-                        name="namaProduk"
-                        value={formData.namaProduk}
-                        readOnly={!isEditable}
+                        name="name"
+                        value={formData.name}
                         onChange={handleInputChange}
+                        readOnly={!isEditable}
                         className="w-full border border-gray-300 dark:border-gray-700 rounded-lg p-2 mt-1"
                       />
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                        Nama Toko
+                        Penjual
                       </label>
                       <input
                         type="text"
-                        name="namaToko"
-                        value={formData.namaToko}
-                        readOnly={!isEditable}
-                        onChange={handleInputChange}
+                        name="seller_id"
+                        value={formData.seller_id}
+                        readOnly
                         className="w-full border border-gray-300 dark:border-gray-700 rounded-lg p-2 mt-1"
                       />
                     </div>
@@ -90,12 +202,12 @@ const DetailProdukPage = () => {
                         Deskripsi
                       </label>
                       <textarea
-                        name="deskripsi"
-                        readOnly={!isEditable}
+                        name="description"
+                        value={formData.description}
                         onChange={handleInputChange}
+                        readOnly={!isEditable}
                         className="w-full border border-gray-300 dark:border-gray-700 rounded-lg p-2 mt-1"
                         rows="5"
-                        value={formData.deskripsi}
                       ></textarea>
                     </div>
 
@@ -105,10 +217,9 @@ const DetailProdukPage = () => {
                       </label>
                       <input
                         type="text"
-                        name="kategori"
-                        value={formData.kategori}
-                        readOnly={!isEditable}
-                        onChange={handleInputChange}
+                        name="category_id"
+                        value={formData.category_id}
+                        readOnly
                         className="w-full border border-gray-300 dark:border-gray-700 rounded-lg p-2 mt-1"
                       />
                     </div>
@@ -120,23 +231,22 @@ const DetailProdukPage = () => {
                         </label>
                         <input
                           type="text"
-                          name="harga"
-                          value={formData.harga}
-                          readOnly={!isEditable}
+                          name="price"
+                          value={formData.price}
                           onChange={handleInputChange}
+                          readOnly={!isEditable}
                           className="w-full border border-gray-300 dark:border-gray-700 rounded-lg p-2 mt-1"
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                          Stok
+                          Tanggal Dibuat
                         </label>
                         <input
                           type="text"
-                          name="stok"
-                          value={formData.stok}
-                          readOnly={!isEditable}
-                          onChange={handleInputChange}
+                          name="created_at"
+                          value={formData.created_at}
+                          readOnly
                           className="w-full border border-gray-300 dark:border-gray-700 rounded-lg p-2 mt-1"
                         />
                       </div>
@@ -144,19 +254,26 @@ const DetailProdukPage = () => {
                   </form>
                 </div>
 
-                {/* Kolom Kanan - Gambar Produk */}
-                <div className="flex items-center justify-center">
-                  <div className="p-4 border border-gray-300 dark:border-gray-700 rounded-lg w-[400px]">
+                <div className="flex flex-col items-center justify-center">
+                  <div className="p-4 border border-gray-300 dark:border-gray-700 rounded-lg w-[400px] mb-4">
                     <img
-                      src="/images/pupuk1.png"
-                      alt="Ecofert"
+                      src={formData.image_path}
+                      alt={formData.name}
                       className="w-full h-auto object-contain rounded-lg"
                     />
                   </div>
+                  {isEditable && (
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="mt-2"
+                    />
+                  )}
                 </div>
               </div>
             </div>
-            <OrderTablePage />
+            <OrderTablePage productId={id} />
           </div>
         </main>
       </div>

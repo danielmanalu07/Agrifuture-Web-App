@@ -184,7 +184,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
                               }}
                             />
                             <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                              Pupuk
+                              Pupuk 
                             </span>
                           </div>
                           <div className="flex shrink-0 ml-2">

@@ -21,7 +21,6 @@ import ReportAdmin from "./pages/admin/Report/Report";
 import ReportDetailAdmin from "./pages/admin/Report/ReportDetail";
 import ProfileAdmin from "./pages/admin/profile/Profile";
 
-
 import DashboardSeller from "./pages/seller/Dashboard";
 import ProductPageSeller from "./pages/seller/Product/Product";
 import AddProductSeller from "./pages/seller/Product/AddProduct";
@@ -36,7 +35,6 @@ import Profile from "./pages/seller/profile/Profile";
 // Helper function to get the user's role
 const getRole = () => {
   const user = JSON.parse(localStorage.getItem("userData"));
-  console.log(user);  // Periksa data yang ada di localStorage
   return user?.role || "guest";
 };
 
@@ -57,15 +55,15 @@ function App() {
       <Route
         path="/"
         element={
-          <Navigate
-            to={
-              role === "admin"
-                ? "/dashboard-admin"
-                : role === "seller"
-                ? "/dashboard-seller"
-                : "/login"
-            }
-          />
+          !localStorage.getItem("userData") ? (
+            <Navigate to="/login" />
+          ) : role === "admin" ? (
+            <Navigate to="/dashboard-admin" />
+          ) : role === "seller" ? (
+            <Navigate to="/dashboard-seller" />
+          ) : (
+            <Navigate to="/login" />
+          )
         }
       />
 
@@ -98,14 +96,13 @@ function App() {
           <Route path="/registrasi" element={<Registration />} />
           <Route path="/produk-seller" element={<ProductPageSeller />} />
           <Route path="/produk-seller/tambah" element={<AddProductSeller />} />
-          <Route path="/produk-seller/detail" element={<DetailProdukPageSeller />} />
+          <Route path="/produk-seller/detail/:id" element={<DetailProdukPageSeller />} />
           <Route path="/customer-seller" element={<CustomerPageSeller />} />
           <Route path="/customer-seller/detail" element={<CustomerOrderSeller />} />
           <Route path="/laporan-seller" element={<ReportSeller />} />
           <Route path="/order-seller" element={<OrderSeller />} />
           <Route path="/order-seller/detail" element={<OrderDetailSeller />} />
           <Route path="/profile" element={<Profile />} />
-          
         </>
       )}
 
