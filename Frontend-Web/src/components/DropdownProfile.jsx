@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import Transition from '../utils/Transition';
+import React, { useState, useRef, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import Transition from "../utils/Transition";
 
 function DropdownProfile({ align }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -15,23 +15,26 @@ function DropdownProfile({ align }) {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         if (!token) {
-          throw new Error('No token found. Please login again.');
+          throw new Error("No token found. Please login again.");
         }
 
-        const response = await axios.get('http://localhost:3000/api/auth/profile', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await axios.get(
+          "http://localhost:3000/api/auth/profile",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         setProfileData(response.data); // Simpan data profil
       } catch (error) {
-        console.error('Error fetching profile:', error);
-        alert('Failed to fetch profile. Please log in again.');
-        localStorage.removeItem('token');
-        navigate('/login');
+        console.error("Error fetching profile:", error);
+        alert("Failed to fetch profile. Please log in again.");
+        localStorage.removeItem("token");
+        navigate("/login");
       }
     };
 
@@ -42,11 +45,16 @@ function DropdownProfile({ align }) {
   useEffect(() => {
     const clickHandler = ({ target }) => {
       if (!dropdown.current) return;
-      if (!dropdownOpen || dropdown.current.contains(target) || trigger.current.contains(target)) return;
+      if (
+        !dropdownOpen ||
+        dropdown.current.contains(target) ||
+        trigger.current.contains(target)
+      )
+        return;
       setDropdownOpen(false);
     };
-    document.addEventListener('click', clickHandler);
-    return () => document.removeEventListener('click', clickHandler);
+    document.addEventListener("click", clickHandler);
+    return () => document.removeEventListener("click", clickHandler);
   });
 
   // Close if the esc key is pressed
@@ -55,21 +63,21 @@ function DropdownProfile({ align }) {
       if (!dropdownOpen || keyCode !== 27) return;
       setDropdownOpen(false);
     };
-    document.addEventListener('keydown', keyHandler);
-    return () => document.removeEventListener('keydown', keyHandler);
+    document.addEventListener("keydown", keyHandler);
+    return () => document.removeEventListener("keydown", keyHandler);
   });
 
   // Handle Sign Out
   const handleSignOut = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
 
       if (!token) {
-        throw new Error('No token found. Please login again.');
+        throw new Error("No token found. Please login again.");
       }
 
       await axios.post(
-        'http://localhost:3000/api/auth/logout',
+        "http://localhost:3000/api/auth/logout",
         {}, // body kosong
         {
           headers: {
@@ -78,13 +86,13 @@ function DropdownProfile({ align }) {
         }
       );
 
-      localStorage.removeItem('token');
-      localStorage.removeItem('userData');
-      navigate('/login');
+      localStorage.removeItem("token");
+      localStorage.removeItem("userData");
+      navigate("/login");
     } catch (error) {
-      console.error('Error during logout:', error);
+      console.error("Error during logout:", error);
       alert(
-        error.response?.data?.message || 'Logout failed. Please try again.'
+        error.response?.data?.message || "Logout failed. Please try again."
       );
     }
   };
@@ -100,7 +108,11 @@ function DropdownProfile({ align }) {
       >
         <img
           className="w-8 h-8 rounded-full"
-          src="/images/user-36-05.jpg"
+          src={
+            profileData?.profilePic
+              ? `${profileData.profilePic}`
+              : "/images/user-36-05.jpg"
+          } // Default fallback image
           width="32"
           height="32"
           alt="User"
@@ -117,7 +129,7 @@ function DropdownProfile({ align }) {
 
       <Transition
         className={`origin-top-right z-10 absolute top-full min-w-44 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700/60 py-1.5 rounded-lg shadow-lg overflow-hidden mt-1 ${
-          align === 'right' ? 'right-0' : 'left-0'
+          align === "right" ? "right-0" : "left-0"
         }`}
         show={dropdownOpen}
         enter="transition ease-out duration-200 transform"
@@ -153,7 +165,7 @@ function DropdownProfile({ align }) {
             <li>
               <Link
                 className="font-medium text-sm text-violet-500 hover:text-violet-600 dark:hover:text-violet-400 flex items-center py-1 px-3"
-                to="/profile"
+                to="/profile-seller"
                 onClick={() => setDropdownOpen(!dropdownOpen)}
               >
                 Profile

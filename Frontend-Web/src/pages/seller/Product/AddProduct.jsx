@@ -9,6 +9,7 @@ const ProductCreationForm = () => {
     name: "",
     description: "",
     price: "",
+    stock: "",
     category_id: "",
   });
   const [categories, setCategories] = useState([]);
@@ -61,6 +62,7 @@ const ProductCreationForm = () => {
     data.append("name", formData.name);
     data.append("description", formData.description);
     data.append("price", formData.price);
+    data.append("stock", formData.stock);
     data.append("category_id", formData.category_id);
     if (image) data.append("image_path", image);
 
@@ -143,6 +145,22 @@ const ProductCreationForm = () => {
                 value={formData.price}
                 onChange={handleChange}
                 placeholder="Masukkan harga produk"
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-green-300"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-1">
+                Stock
+              </label>
+              <input
+                type="number"
+                id="stock"
+                name="stock"
+                value={formData.stock}
+                onChange={handleChange}
+                placeholder="Masukkan stock produk"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-green-300"
                 required
               />

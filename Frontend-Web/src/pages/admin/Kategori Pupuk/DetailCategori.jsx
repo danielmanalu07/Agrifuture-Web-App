@@ -9,68 +9,46 @@ const CategoryDetailPage = () => {
   const [category, setCategory] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [editedName, setEditedName] = useState("");
+  const [editedImage, setEditedImage] = useState(null); // Store the new image
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const { id } = useParams();
   const navigate = useNavigate();
 
+  const baseUrl = "http://localhost:3000"; // URL dasar server Anda
+
   // Fetch Category Details
   useEffect(() => {
     const fetchCategoryDetails = async () => {
       try {
-        // 1. Cek token
         const token = localStorage.getItem("token");
         if (!token) {
           navigate("/login");
           return;
         }
 
-        // 2. Loading state
         setLoading(true);
         setError(null);
 
-        // 3. Konfigurasi request
-        const config = {
-          method: "get",
-          url: `http://localhost:3000/api/kategori/${id}`,
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        };
+        const response = await axios.get(`http://localhost:3000/api/kategori/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-        // 4. Fetch data dengan axios
-        const response = await axios(config);
-
-        // 5. Validasi response
         if (!response.data || !response.data.kategori) {
           throw new Error("Data kategori tidak ditemukan");
         }
 
-        // 6. Set data kategori
-        const categoryData = response.data.kategori;
-
-        // 7. Update state
-        setCategory(categoryData);
-        setEditedName(categoryData.name);
-
-        // 8. Tambahan informasi (opsional)
-        console.log("Category Details:", categoryData);
+        setCategory(response.data.kategori);
+        setEditedName(response.data.kategori.name);
       } catch (err) {
-        // 9. Error handling terperinci
         console.error("Fetch Category Details Error:", err);
-
-        // Reset state
         setCategory(null);
         setEditedName("");
 
-        // Tangani berbagai jenis error
         if (err.response) {
-          // Error dari server dengan response
           switch (err.response.status) {
             case 401:
-              // Token expired atau tidak valid
               localStorage.removeItem("token");
               navigate("/login");
               break;
@@ -78,26 +56,18 @@ const CategoryDetailPage = () => {
               setError("Kategori tidak ditemukan");
               break;
             default:
-              setError(
-                err.response.data.message || "Gagal mengambil detail kategori"
-              );
+              setError(err.response.data.message || "Gagal mengambil detail kategori");
           }
         } else if (err.request) {
-          // Request terkirim tapi tidak ada response
-          setError(
-            "Tidak dapat terhubung ke server. Periksa koneksi internet."
-          );
+          setError("Tidak dapat terhubung ke server. Periksa koneksi internet.");
         } else {
-          // Error lainnya
           setError("Terjadi kesalahan dalam memproses permintaan.");
         }
       } finally {
-        // 10. Matikan loading
         setLoading(false);
       }
     };
 
-    // Panggil fungsi fetch
     fetchCategoryDetails();
   }, [id, navigate]);
 
@@ -110,43 +80,42 @@ const CategoryDetailPage = () => {
         return;
       }
 
-      // Validasi nama kategori
       if (!editedName.trim()) {
         alert("Nama kategori tidak boleh kosong!");
         return;
       }
 
+      const formData = new FormData();
+      formData.append("name", editedName);
+      if (editedImage) {
+        formData.append("image", editedImage); // Append the new image if it exists
+      }
+
       const response = await axios.put(
         `http://localhost:3000/api/kategori/edit/${id}`,
-        { name: editedName },
+        formData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
+            "Content-Type": "multipart/form-data", // Set content type for file upload
           },
         }
       );
 
-      // Update kategori di state
       setCategory((prevCategory) => ({
         ...prevCategory,
         name: editedName,
+        image_path: response.data.kategori.image_path, // Update the image path from the response
       }));
 
-      // Keluar dari mode edit
       setEditMode(false);
       alert("Kategori berhasil diperbarui!");
     } catch (err) {
       console.error("Edit Category Error:", err);
-      if (err.response) {
-        alert(err.response.data.message || "Gagal memperbarui kategori");
-      } else {
-        alert("Terjadi kesalahan dalam memperbarui kategori");
-      }
+      alert(err.response?.data?.message || "Gagal memperbarui kategori");
     }
   };
 
-  // Loading State
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -155,7 +124,6 @@ const CategoryDetailPage = () => {
     );
   }
 
-  // Error State
   if (error) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -183,9 +151,29 @@ const CategoryDetailPage = () => {
               Detail Kategori
             </h1>
 
+            {/* Display Category Image */}
+            {category?.image_path && !editMode && (
+              <div className="mb-4">
+                <img
+                  src={`${baseUrl}${category.image_path}`} // Display the image using the base URL and image path
+                  alt={category.name}
+                  className="w-full h-64 object-cover rounded-lg"
+                />
+              </div>
+            )}
+
             {editMode ? (
-              // Edit Mode
               <div>
+                {category?.image_path && (
+                  <div className="mb-4">
+                    <img
+                      src={`${baseUrl}${category.image_path}`} // Show current image while editing
+                      alt={category.name}
+                      className="w-full h-64 object-cover rounded-lg"
+                    />
+                  </div>
+                )}
+
                 <div className="mb-4">
                   <label
                     htmlFor="categoryName"
@@ -202,6 +190,22 @@ const CategoryDetailPage = () => {
                   />
                 </div>
 
+                <div className="mb-4">
+                  <label
+                    htmlFor="categoryImage"
+                    className="block text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    Gambar Kategori
+                  </label>
+                  <input
+                    type="file"
+                    id="categoryImage"
+                    accept="image/*"
+                    onChange={(e) => setEditedImage(e.target.files[0])}
+                    className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:text-gray-200"
+                  />
+                </div>
+
                 <div className="flex space-x-2">
                   <button
                     onClick={handleEditCategory}
@@ -213,6 +217,7 @@ const CategoryDetailPage = () => {
                     onClick={() => {
                       setEditMode(false);
                       setEditedName(category.name);
+                      setEditedImage(null); // Reset image selection
                     }}
                     className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
                   >
@@ -221,7 +226,6 @@ const CategoryDetailPage = () => {
                 </div>
               </div>
             ) : (
-              // Detail Mode
               <div>
                 <div className="mb-4">
                   <label className="block text-gray-600 dark:text-gray-300 mb-2">

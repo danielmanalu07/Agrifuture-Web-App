@@ -56,7 +56,7 @@ const DetailProdukPage = () => {
             ? `Penjual ${response.data.seller_id}` 
             : "Penjual Tidak Diketahui",
           image_path: response.data.image_path 
-            ? `http://localhost:3000/uploads/${response.data.image_path}` 
+            ? `http://localhost:3000${response.data.image_path}` 
             : "/images/default.png",
           created_at: response.data.created_at 
             ? new Date(response.data.created_at).toLocaleDateString('id-ID') 

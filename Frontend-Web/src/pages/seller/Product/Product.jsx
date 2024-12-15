@@ -3,6 +3,7 @@ import Sidebar from "../../../partials/SidebarSeller";
 import Header from "../../../partials/Header";
 import axios from "axios";
 import ProductTable from "../../../partials/product/tabelProductSeller";
+import { Link } from "react-router-dom";  // Import Link dari react-router-dom
 
 const ProductPage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -45,6 +46,16 @@ const ProductPage = () => {
                 <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">
                   Pupuk Seller
                 </h1>
+              </div>
+
+              {/* Tombol Tambah Pupuk */}
+              <div className="mb-4 sm:mb-0">
+                <Link
+                  to="/produk-seller/tambah"
+                  className="px-4 py-2 bg-[#7AB434] hover:bg-[#6AA22F] text-white rounded-lg"
+                >
+                  Tambah Pupuk
+                </Link>
               </div>
             </div>
 

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Sidebar from "../../../partials/SidebarSeller";
 import Header from "../../../partials/Header";
 import OrderTablePage from "../../../partials/detailProduk/OrderTabelPage";
 
 const DetailProdukPage = () => {
-  const { id } = useParams(); 
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -17,10 +18,16 @@ const DetailProdukPage = () => {
     description: "",
     category_id: "",
     price: "",
+    stock: "",
     seller_id: "",
     image_path: "",
-    created_at: ""
+    created_at: "",
   });
+  const [showAddStockForm, setShowAddStockForm] = useState(false);
+  const [addedStock, setAddedStock] = useState("");
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupMessage, setPopupMessage] = useState("");
+  const [popupType, setPopupType] = useState("success");
 
   // Fetch data produk berdasarkan ID
   useEffect(() => {
@@ -31,35 +38,32 @@ const DetailProdukPage = () => {
 
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          `http://localhost:3000/api/pupuk/${id}`, // Update endpoint for seller
+          `http://localhost:3000/api/pupuk/${id}`,
           {
-            headers: { 
+            headers: {
               Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json'
+              "Content-Type": "application/json",
             },
           }
         );
 
-        // Save full product data for reference
         setProductData(response.data);
-
-        // Prepare form data directly from response
         setFormData({
           name: response.data.name || "Nama Produk Tidak Ada",
+          stock: response.data.stock || "Stock Produk Tidak Ada",
           description: response.data.description || "Deskripsi Tidak Ada",
-          category_id: response.data.category_name || "Kategori Tidak Ada",
-          price: response.data.price 
-            ? `Rp ${parseFloat(response.data.price).toLocaleString("id-ID")}` 
+          category_name: response.data.category_name || "Kategori Tidak Ada",
+          price: response.data.price
+            ? `Rp ${parseFloat(response.data.price).toLocaleString("id-ID")}`
             : "Rp 0",
-          seller_id: response.data.seller_name || "Penjual Tidak Diketahui",
-          image_path: response.data.image_path 
-            ? `http://localhost:3000/uploads/${response.data.image_path}` 
+          seller_name: response.data.seller_name || "Penjual Tidak Diketahui",
+          image_path: response.data.image_path
+            ? `http://localhost:3000${response.data.image_path}`
             : "/images/default.png",
-          created_at: response.data.created_at 
-            ? new Date(response.data.created_at).toLocaleDateString('id-ID') 
-            : "Tanggal Tidak Tersedia"
+          created_at: response.data.created_at
+            ? new Date(response.data.created_at).toLocaleDateString("id-ID")
+            : "Tanggal Tidak Tersedia",
         });
-
       } catch (err) {
         console.error("Detailed Error:", err);
         setError(err.response?.data?.message || "Gagal memuat detail produk");
@@ -85,16 +89,16 @@ const DetailProdukPage = () => {
       try {
         const token = localStorage.getItem("token");
         await axios.put(
-          `http://localhost:3000/api/pupuk/${id}`,
+          `http://localhost:3000/api/pupuk/edit/${id}`,
           {
             name: formData.name,
             description: formData.description,
-            price: parseFloat(formData.price.replace(/[^0-9.-]+/g,"")),
+            price: parseFloat(formData.price.replace(/[^0-9.-]+/g, "")),
           },
           {
-            headers: { 
+            headers: {
               Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json'
+              "Content-Type": "application/json",
             },
           }
         );
@@ -110,35 +114,138 @@ const DetailProdukPage = () => {
   // Handle image upload
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const formDataUpload = new FormData();
-      formDataUpload.append('image', file);
+    if (!file) return;
+  
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append("image_path", file);
+  
+      const token = localStorage.getItem("token");
+      const response = await axios.put(
+        `http://localhost:3000/api/pupuk/edit/${id}`, 
+        uploadFormData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      // Check if the response contains the new image path
+      const newImagePath = response.data.image_path 
+        ? `http://localhost:3000${response.data.image_path}`
+        : URL.createObjectURL(file);
+  
+      // Update both form data and local state
+      setFormData(prev => ({
+        ...prev,
+        image_path: newImagePath
+      }));
+  
+      // Show success popup
+      setPopupMessage("Gambar berhasil diperbarui");
+      setPopupType("success");
+      setShowPopup(true);
+  
+    } catch (error) {
+      console.error("Error saat mengunggah gambar:", error.response || error.message);
+      
+      // Show error popup
+      setPopupMessage("Gagal mengunggah gambar");
+      setPopupType("error");
+      setShowPopup(true);
+    }
+  };
+  
+  
+  
 
+  // Handle adding stock
+  const handleAddStock = async () => {
+    if (!addedStock || isNaN(addedStock) || parseFloat(addedStock) <= 0) {
+      setPopupMessage("Harap masukkan jumlah stok yang valid");
+      setPopupType("error");
+      setShowPopup(true);
+      return;
+    }
+  
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(
+        `http://localhost:3000/api/pupuk/add-stock/${id}`, // Uses the existing 'id' from useParams
+        { addedStock: parseFloat(addedStock) },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      // Update local state with new stock
+      setFormData(prev => ({
+        ...prev,
+        stock: (parseFloat(prev.stock) + parseFloat(addedStock)).toString()
+      }));
+  
+      setPopupMessage(`Berhasil menambahkan ${addedStock} stok`);
+      setPopupType("success");
+      setShowPopup(true);
+      setAddedStock("");
+      setShowAddStockForm(false);
+    } catch (err) {
+      console.error("Error adding stock:", err);
+      setPopupMessage(err.response?.data?.message || "Gagal menambahkan stok");
+      setPopupType("error");
+      setShowPopup(true);
+
+      setShowConfirmModal(true);
+    }
+  };
+  
+
+  // Handle product deletion
+  const handleDeleteProduct = async () => {
+    if (window.confirm("Apakah Anda yakin ingin menghapus produk ini?")) {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.post(
-          `http://localhost:3000/api/pupuk/${id}/upload`,
-          formDataUpload,
+        await axios.delete(
+          `http://localhost:3000/api/pupuk/hapus/${id}`,
           {
-            headers: { 
+            headers: {
               Authorization: `Bearer ${token}`,
-              'Content-Type': 'multipart/form-data'
+              "Content-Type": "application/json",
             },
           }
         );
-
-        // Update image path
-        setFormData((prev) => ({
-          ...prev,
-          image_path: `http://localhost:3000/uploads/${response.data.image_path}`
-        }));
-
-        alert("Gambar berhasil diunggah");
+        alert("Produk berhasil dihapus");
+        navigate("/produk-seller");
       } catch (err) {
-        console.error("Error uploading image:", err);
-        alert("Gagal mengunggah gambar");
+        console.error("Error deleting product:", err);
+        alert("Gagal menghapus produk");
       }
     }
+  };
+
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  // Popup Component
+  const Popup = ({ message, type, onClose }) => {
+    useEffect(() => {
+      const timer = setTimeout(onClose, 3000);
+      return () => clearTimeout(timer);
+    }, [onClose]);
+
+    return (
+      <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
+        type === 'success' 
+          ? 'bg-green-500 text-white' 
+          : 'bg-red-500 text-white'
+      }`}>
+        {message}
+      </div>
+    );
   };
 
   if (loading) return <div>Loading...</div>;
@@ -146,6 +253,14 @@ const DetailProdukPage = () => {
 
   return (
     <div className="flex h-screen overflow-hidden dark:bg-gray-900 dark:text-gray-100">
+      {showPopup && (
+        <Popup 
+          message={popupMessage} 
+          type={popupType} 
+          onClose={() => setShowPopup(false)} 
+        />
+      )}
+      
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
       <div className="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
         <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
@@ -158,12 +273,20 @@ const DetailProdukPage = () => {
                   Detail Produk
                 </h1>
               </div>
-              <button
-                onClick={toggleEditMode}
-                className="px-4 py-2 bg-[#7AB434] hover:bg-[#6AA22F] text-white rounded-lg"
-              >
-                {isEditable ? "Simpan" : "Edit"}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={toggleEditMode}
+                  className="px-4 py-2 bg-[#7AB434] hover:bg-[#6AA22F] text-white rounded-lg"
+                >
+                  {isEditable ? "Simpan" : "Edit"}
+                </button>
+                <button
+                  onClick={handleDeleteProduct}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
+                >
+                  Hapus
+                </button>
+              </div>
             </div>
 
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
@@ -191,7 +314,7 @@ const DetailProdukPage = () => {
                       <input
                         type="text"
                         name="seller_id"
-                        value={formData.seller_id}
+                        value={formData.seller_name}
                         readOnly
                         className="w-full border border-gray-300 dark:border-gray-700 rounded-lg p-2 mt-1"
                       />
@@ -211,18 +334,60 @@ const DetailProdukPage = () => {
                       ></textarea>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-                        Kategori
-                      </label>
-                      <input
-                        type="text"
-                        name="category_id"
-                        value={formData.category_id}
-                        readOnly
-                        className="w-full border border-gray-300 dark:border-gray-700 rounded-lg p-2 mt-1"
-                      />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                          Kategori
+                        </label>
+                        <input
+                          type="text"
+                          name="category_name"
+                          value={formData.category_name}
+                          readOnly
+                          className="w-full border border-gray-300 dark:border-gray-700 rounded-lg p-2 mt-1"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                          Stok
+                        </label>
+                        <input
+                          type="text"
+                          name="stock"
+                          value={formData.stock}
+                          readOnly
+                          className="w-full border border-gray-300 dark:border-gray-700 rounded-lg p-2 mt-1"
+                        />
+                      </div>
+                      <div>
+                        <button
+                          type="button"
+                          onClick={() => setShowAddStockForm(!showAddStockForm)}
+                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg mt-4"
+                        >
+                          {showAddStockForm ? "Batal" : "Tambah Stok"}
+                        </button>
+                      </div>
                     </div>
+
+                    {showAddStockForm && (
+                      <div className="mt-4">
+                        <input
+                          type="number"
+                          value={addedStock}
+                          onChange={(e) => setAddedStock(e.target.value)}
+                          className="w-full border border-gray-300 dark:border-gray-700 rounded-lg p-2 mt-1"
+                          placeholder="Masukkan jumlah stok"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddStock}
+                          className="px-4 py-2 bg-[#7AB434] hover:bg-[#6AA22F] text-white rounded-lg mt-2"
+                        >
+                          Tambah Stok
+                        </button>
+                      </div>
+                    )}
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -263,8 +428,8 @@ const DetailProdukPage = () => {
                     />
                   </div>
                   {isEditable && (
-                    <input 
-                      type="file" 
+                    <input
+                      type="file"
                       accept="image/*"
                       onChange={handleImageUpload}
                       className="mt-2"

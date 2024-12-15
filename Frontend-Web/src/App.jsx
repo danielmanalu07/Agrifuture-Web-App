@@ -31,6 +31,7 @@ import ReportSeller from "./pages/seller/Report/Report";
 import OrderSeller from "./pages/seller/Order/Order";
 import OrderDetailSeller from "./pages/seller/Order/OrderDetail";
 import Profile from "./pages/seller/profile/Profile";
+import Stock from "./pages/seller/Product/AddStock";
 
 // Helper function to get the user's role
 const getRole = () => {
@@ -51,21 +52,6 @@ function App() {
 
   return (
     <Routes>
-      {/* Default Route */}
-      <Route
-        path="/"
-        element={
-          !localStorage.getItem("userData") ? (
-            <Navigate to="/login" />
-          ) : role === "admin" ? (
-            <Navigate to="/dashboard-admin" />
-          ) : role === "seller" ? (
-            <Navigate to="/dashboard-seller" />
-          ) : (
-            <Navigate to="/login" />
-          )
-        }
-      />
 
       {/* Login Page */}
       <Route path="/login" element={<Login />} />
@@ -102,7 +88,8 @@ function App() {
           <Route path="/laporan-seller" element={<ReportSeller />} />
           <Route path="/order-seller" element={<OrderSeller />} />
           <Route path="/order-seller/detail" element={<OrderDetailSeller />} />
-          <Route path="/profile" element={<Profile />} />
+          <Route path="/profile-seller" element={<Profile />} />
+          <Route path="/seller/tambah-stok/:id" element={<Stock />} />
         </>
       )}
 

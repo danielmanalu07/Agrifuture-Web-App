@@ -63,7 +63,7 @@ const ProductTable = () => {
             className="product-card"
           >
             <img
-              src={`http://localhost:4000${product.image_path}`}
+              src={`http://localhost:3000${product.image_path}`}
               alt={product.name || "Product Image"}
               className="product-image"
             />

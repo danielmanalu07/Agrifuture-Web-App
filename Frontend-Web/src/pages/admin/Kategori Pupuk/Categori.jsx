@@ -72,7 +72,6 @@ const AllCategoriesPage = () => {
         }
       );
 
-      // Tambahkan pengecekan respons dari server
       if (response.status === 200) {
         setCategories((prevCategories) =>
           prevCategories.filter((category) => category.id !== id)
@@ -83,16 +82,11 @@ const AllCategoriesPage = () => {
       }
     } catch (err) {
       console.error("Delete Error:", err);
-
-      // Tampilkan pesan error yang lebih informatif
       if (err.response) {
-        // Error dari server
         alert(err.response.data.message || "Gagal menghapus kategori!");
       } else if (err.request) {
-        // Request terkirim tapi tidak ada respons
         alert("Tidak ada respons dari server");
       } else {
-        // Error lainnya
         alert("Terjadi kesalahan: " + err.message);
       }
     }
@@ -154,6 +148,9 @@ const AllCategoriesPage = () => {
                         Nama Kategori
                       </th>
                       <th className="px-4 py-2 text-left text-gray-700 dark:text-gray-100">
+                        Gambar
+                      </th>
+                      <th className="px-4 py-2 text-left text-gray-700 dark:text-gray-100">
                         Aksi
                       </th>
                     </tr>
@@ -166,6 +163,22 @@ const AllCategoriesPage = () => {
                       >
                         <td className="px-4 py-2 text-gray-800 dark:text-gray-100">
                           {category.name}
+                        </td>
+                        <td className="px-4 py-2 text-gray-800 dark:text-gray-100">
+                          <img
+                            src={
+                              category.image_path &&
+                              category.image_path.startsWith("/")
+                                ? `http://localhost:3000${category.image_path}` // Make sure to concatenate the full URL
+                                : category.image_path ||
+                                  "/images/default-image.jpg"
+                            }
+                            alt={category.name || "Kategori"}
+                            className="w-16 h-16 object-cover rounded-lg"
+                            onError={(e) =>
+                              (e.target.src = "/images/default-image.jpg")
+                            }
+                          />
                         </td>
                         <td className="px-4 py-2 text-gray-800 dark:text-gray-100">
                           <NavLink
