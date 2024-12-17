@@ -68,7 +68,7 @@ function App() {
           <Route path="/customer-admin" element={<CustomerPageAdmin />} />
           <Route path="/customer-admin/detail" element={<CustomerOrderAdmin />} />
           <Route path="/seller-admin" element={<SellerPage />} />
-          <Route path="/seller-admin/detail" element={<SellerDetail />} />
+          <Route path="/seller-admin/detail/:id" element={<SellerDetail />} />
           <Route path="/laporan-admin" element={<ReportAdmin />} />
           <Route path="/laporan-admin/detail" element={<ReportDetailAdmin />} />
           <Route path="/profile-admin" element={<ProfileAdmin />} />
@@ -87,7 +87,7 @@ function App() {
           <Route path="/customer-seller/detail" element={<CustomerOrderSeller />} />
           <Route path="/laporan-seller" element={<ReportSeller />} />
           <Route path="/order-seller" element={<OrderSeller />} />
-          <Route path="/order-seller/detail" element={<OrderDetailSeller />} />
+          <Route path="/order-seller/detail/:id" element={<OrderDetailSeller />} />
           <Route path="/profile-seller" element={<Profile />} />
           <Route path="/seller/tambah-stok/:id" element={<Stock />} />
         </>

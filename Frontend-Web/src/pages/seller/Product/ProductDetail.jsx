@@ -29,6 +29,7 @@ const DetailProdukPage = () => {
   const [popupMessage, setPopupMessage] = useState("");
   const [popupType, setPopupType] = useState("success");
 
+  
   // Fetch data produk berdasarkan ID
   useEffect(() => {
     const fetchProductDetail = async () => {
@@ -52,17 +53,21 @@ const DetailProdukPage = () => {
           name: response.data.name || "Nama Produk Tidak Ada",
           stock: response.data.stock || "Stock Produk Tidak Ada",
           description: response.data.description || "Deskripsi Tidak Ada",
-          category_name: response.data.category_name || "Kategori Tidak Ada",
-          price: response.data.price
-            ? `Rp ${parseFloat(response.data.price).toLocaleString("id-ID")}`
-            : "Rp 0",
-          seller_name: response.data.seller_name || "Penjual Tidak Diketahui",
-          image_path: response.data.image_path
-            ? `http://localhost:3000${response.data.image_path}`
+          category_id: response.data.category_id 
+            ? `Kategori ${response.data.category_id}` 
+            : "Kategori Tidak Ada",
+          price: response.data.price 
+            ? `Rp ${parseFloat(response.data.price).toLocaleString("id-ID")}` 
+            : "0",
+          seller_id: response.data.seller_id 
+            ? `Penjual ${response.data.seller_id}` 
+            : "Penjual Tidak Diketahui",
+          image_path: response.data.image_path 
+            ? `http://localhost:3000${response.data.image_path}` 
             : "/images/default.png",
-          created_at: response.data.created_at
-            ? new Date(response.data.created_at).toLocaleDateString("id-ID")
-            : "Tanggal Tidak Tersedia",
+          created_at: response.data.created_at 
+            ? new Date(response.data.created_at).toLocaleDateString('id-ID') 
+            : "Tanggal Tidak Tersedia"
         });
       } catch (err) {
         console.error("Detailed Error:", err);
@@ -314,7 +319,7 @@ const DetailProdukPage = () => {
                       <input
                         type="text"
                         name="seller_id"
-                        value={formData.seller_name}
+                        value={formData.seller_id}
                         readOnly
                         className="w-full border border-gray-300 dark:border-gray-700 rounded-lg p-2 mt-1"
                       />
@@ -342,7 +347,7 @@ const DetailProdukPage = () => {
                         <input
                           type="text"
                           name="category_name"
-                          value={formData.category_name}
+                          value={formData.category_id}
                           readOnly
                           className="w-full border border-gray-300 dark:border-gray-700 rounded-lg p-2 mt-1"
                         />

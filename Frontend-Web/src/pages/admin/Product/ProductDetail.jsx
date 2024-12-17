@@ -16,6 +16,7 @@ const DetailProdukPage = () => {
     description: "",
     category_id: "",
     price: "",
+    stock: "",
     seller_id: "",
     image_path: "",
     created_at: ""
@@ -45,6 +46,7 @@ const DetailProdukPage = () => {
         // Prepare form data directly from response
         setFormData({
           name: response.data.name || "Nama Produk Tidak Ada",
+          stock: response.data.stock || "Stock Produk Tidak Ada",
           description: response.data.description || "Deskripsi Tidak Ada",
           category_id: response.data.category_id 
             ? `Kategori ${response.data.category_id}` 
@@ -152,6 +154,18 @@ const DetailProdukPage = () => {
                         className="w-full border border-gray-300 dark:border-gray-700 rounded-lg p-2 mt-1"
                       />
                     </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                          Stok
+                        </label>
+                        <input
+                          type="text"
+                          name="stock"
+                          value={formData.stock}
+                          readOnly
+                          className="w-full border border-gray-300 dark:border-gray-700 rounded-lg p-2 mt-1"
+                        />
+                      </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>

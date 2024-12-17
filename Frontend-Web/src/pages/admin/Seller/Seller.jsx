@@ -189,7 +189,12 @@ const SellerTable = () => {
                         key={seller.id}
                         className="hover:bg-gray-50 dark:hover:bg-gray-700"
                       >
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-200">
+                        <td
+                          className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-200 cursor-pointer"
+                          onClick={() =>
+                            navigate(`/seller-admin/detail/${seller.id}`)
+                          }
+                        >
                           {seller.name}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">

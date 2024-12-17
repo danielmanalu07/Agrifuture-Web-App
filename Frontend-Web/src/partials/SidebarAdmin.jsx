@@ -18,7 +18,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
   );
 
   // Authentication check (Add this logic for redirect if not authenticated)
-  const isAuthenticated = localStorage.getItem('token');
+  const isAuthenticated = localStorage.getItem("token");
   useEffect(() => {
     // Redirect to login if not authenticated
     if (!isAuthenticated && !pathname.includes("login")) {
@@ -116,7 +116,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
                   return (
                     <React.Fragment>
                       <NavLink
-                        to="/dashboard-admin" 
+                        to="/dashboard-admin"
                         className={`block text-gray-800 dark:text-gray-100 truncate transition duration-150 ${
                           pathname.includes("product")
                             ? ""
@@ -162,60 +162,86 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
               </SidebarLinkGroup>
               {/* Pengguna */}
               <SidebarLinkGroup activecondition={pathname.includes("product")}>
-                {(handleClick, open) => {
-                  return (
-                    <React.Fragment>
+                {(handleClick, open) => (
+                  <React.Fragment>
+                    {/* Parent Menu */}
+                    <button
+                      className={`block w-full text-left text-gray-800 dark:text-gray-100 truncate transition duration-150 ${
+                        pathname.includes("product")
+                          ? ""
+                          : "hover:text-gray-900 dark:hover:text-white"
+                      }`}
+                      onClick={handleClick}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <Icon
+                            icon="mdi:sprout-outline"
+                            className={`shrink-0 ${
+                              pathname.includes("product")
+                                ? "text-violet-500"
+                                : "text-gray-400 dark:text-gray-500"
+                            }`}
+                            width="30"
+                            height="30"
+                            style={{
+                              color: pathname.includes("product")
+                                ? "#7AB434"
+                                : "green",
+                            }}
+                          />
+                          <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                            Pupuk
+                          </span>
+                        </div>
+                        <div className="flex shrink-0 ml-2">
+                          <svg
+                            className={`w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500 ${
+                              open ? "rotate-180" : ""
+                            }`}
+                            viewBox="0 0 12 12"
+                          >
+                            <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
+                          </svg>
+                        </div>
+                      </div>
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    <div
+                      className={`pl-9 mt-1 ${!open ? "hidden" : ""}`}
+                      style={{ transition: "all 0.2s ease-in-out" }}
+                    >
                       <NavLink
-                        to="/produk-admin" 
-                        className={`block text-gray-800 dark:text-gray-100 truncate transition duration-150 ${
-                          pathname.includes("product")
-                            ? ""
-                            : "hover:text-gray-900 dark:hover:text-white"
-                        }`}
-                        onClick={handleClick}
+                        to="/produk-admin"
+                        className="block text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white truncate transition duration-150 py-1"
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <Icon
-                              icon="mdi:bag-personal-outline"
-                              className={`shrink-0 ${
-                                pathname === "/product"
-                                  ? "text-violet-500"
-                                  : "text-gray-400 dark:text-gray-500"
-                              }`}
-                              width="30"
-                              height="30"
-                              style={{
-                                color:
-                                  pathname === "/product" ? "#7AB434" : "green",
-                              }}
-                            />
-                            <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                              Pupuk
-                            </span>
-                          </div>
-                          <div className="flex shrink-0 ml-2">
-                            <svg
-                              className={`w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500 ${
-                                open && "rotate-180"
-                              }`}
-                              viewBox="0 0 12 12"
-                            >
-                              <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
-                            </svg>
-                          </div>
+                        <div className="flex items-center">
+                          <Icon
+                            icon="mdi:view-list-outline"
+                            className="shrink-0"
+                            width="24"
+                            height="24"
+                            style={{
+                              color: "#7AB434",
+                            }}
+                          />
+                          <span className="text-sm font-medium ml-3">
+                            Daftar Produk
+                          </span>
                         </div>
                       </NavLink>
-                    </React.Fragment>
-                  );
-                }}
+                    </div>
+                  </React.Fragment>
+                )}
               </SidebarLinkGroup>
+
               <SidebarLinkGroup activecondition={pathname.includes("product")}>
                 {(handleClick, open) => {
                   return (
                     <React.Fragment>
                       <NavLink
-                        to="/kategori-admin" 
+                        to="/kategori-admin"
                         className={`block text-gray-800 dark:text-gray-100 truncate transition duration-150 ${
                           pathname.includes("product")
                             ? ""
@@ -226,9 +252,9 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center">
                             <Icon
-                              icon="mdi:bag-personal-outline"
+                              icon="mdi:view-dashboard-outline"
                               className={`shrink-0 ${
-                                pathname === "/product"
+                                pathname === "/kategori-admin"
                                   ? "text-violet-500"
                                   : "text-gray-400 dark:text-gray-500"
                               }`}
@@ -236,7 +262,9 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
                               height="30"
                               style={{
                                 color:
-                                  pathname === "/product" ? "#7AB434" : "green",
+                                  pathname === "/kategori-admin"
+                                    ? "#7AB434"
+                                    : "green",
                               }}
                             />
                             <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
@@ -255,16 +283,63 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
                           </div>
                         </div>
                       </NavLink>
+
+                      {/* Dropdown Menu */}
+                      <div
+                        className={`pl-9 mt-1 ${!open ? "hidden" : ""}`}
+                        style={{ transition: "all 0.2s ease-in-out" }}
+                      >
+                        <NavLink
+                          to="/tambah-kategori"
+                          className="block text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white truncate transition duration-150 py-1"
+                        >
+                          <div className="flex items-center">
+                            <Icon
+                              icon="mdi:plus-circle-outline"
+                              className="shrink-0"
+                              width="24"
+                              height="24"
+                              style={{
+                                color: "#7AB434",
+                              }}
+                            />
+                            <span className="text-sm font-medium ml-3">
+                              Tambah Kategori
+                            </span>
+                          </div>
+                        </NavLink>
+
+                        <NavLink
+                          to="/kategori-admin"
+                          className="block text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white truncate transition duration-150 py-1"
+                        >
+                          <div className="flex items-center">
+                            <Icon
+                              icon="mdi:view-list-outline"
+                              className="shrink-0"
+                              width="24"
+                              height="24"
+                              style={{
+                                color: "#7AB434",
+                              }}
+                            />
+                            <span className="text-sm font-medium ml-3">
+                              Daftar Kategori
+                            </span>
+                          </div>
+                        </NavLink>
+                      </div>
                     </React.Fragment>
                   );
                 }}
               </SidebarLinkGroup>
+
               <SidebarLinkGroup activecondition={pathname.includes("pengguna")}>
                 {(handleClick, open) => {
                   return (
                     <React.Fragment>
                       <NavLink
-                        to="/customer-admin" 
+                        to="/customer-admin"
                         className={`block text-gray-800 dark:text-gray-100 truncate transition duration-150 ${
                           pathname.includes("product")
                             ? ""
@@ -314,7 +389,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
                   return (
                     <React.Fragment>
                       <NavLink
-                        to="/seller-admin" 
+                        to="/seller-admin"
                         className={`block text-gray-800 dark:text-gray-100 truncate transition duration-150 ${
                           pathname.includes("seller")
                             ? ""
@@ -325,7 +400,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center">
                             <Icon
-                              icon="mdi:store-outline"
+                              icon="mdi:account-cash-outline"
                               className={`shrink-0 ${
                                 pathname === "/product"
                                   ? "text-violet-500"
@@ -364,7 +439,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
                   return (
                     <React.Fragment>
                       <NavLink
-                        to="/laporan-admin" 
+                        to="/laporan-admin"
                         className={`block text-gray-800 dark:text-gray-100 truncate transition duration-150 ${
                           pathname.includes("product")
                             ? ""
@@ -375,7 +450,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center">
                             <Icon
-                              icon="mdi:book-outline"
+                              icon="mdi:file-document-outline"
                               className={`shrink-0 ${
                                 pathname === "/product"
                                   ? "text-violet-500"
@@ -408,7 +483,6 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
                   );
                 }}
               </SidebarLinkGroup>
-
             </ul>
           </div>
         </div>
